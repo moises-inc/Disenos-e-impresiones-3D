@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OpenSCAD
+# (Si bien no suelen generar basura, a veces hay temporales o copias de seguridad de editores)
+*~
+*.bak
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
