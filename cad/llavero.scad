@@ -91,13 +91,13 @@ module oreja_2d() {
 
 // Cerebro recortado y centrado matemáticamente en (0,0)
 module logo_cerebro_centrado_2d() {
-    // El cerebro del SVG normalizado a 100 está desplazado en Y.
-    // Un offset de Y=-16 lo centra perfectamente en el origen (0,0).
-    translate([0, -16, 0]) {
+    // El cerebro del SVG normalizado con coordenadas positivas está desplazado en Y en el centrado de OpenSCAD.
+    // Un offset de Y=-11 lo centra perfectamente en el origen (0,0).
+    translate([0, -11, 0]) {
         intersection() {
             import("logo.svg", center=true);
-            // Rectángulo de recorte para excluir las letras vectorizadas del SVG original
-            translate([-60, -20]) square([120, 80]);
+            // Rectángulo de recorte para excluir las letras vectorizadas (Y < -28)
+            translate([-60, -28]) square([120, 85]);
         }
     }
 }

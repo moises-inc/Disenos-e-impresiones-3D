@@ -25,7 +25,7 @@ def vectorize_png(png_path, svg_out_path, threshold=200, min_points=5):
     # Invertir verticalmente la imagen para que el origen (0,0) de OpenSCAD quede abajo-izquierda como en cartesianas
     # o mantener la orientación normal. En OpenSCAD, Y aumenta hacia arriba, y en imágenes Y aumenta hacia abajo.
     # Así que invertiremos el eje Y para que no salga de cabeza en OpenSCAD.
-    binary = img_np[::-1, :] > threshold
+    binary = img_np > threshold
     
     print("[*] Detectando contornos con matplotlib...")
     # Obtener isolíneas para el umbral 0.5 en la matriz binaria
@@ -80,55 +80,55 @@ def vectorize_png(png_path, svg_out_path, threshold=200, min_points=5):
         print("[-] Error: Todos los contornos fueron filtrados por tamaño.")
         return False
         
-    # Normalizar coordenadas para centrar el logo en (0,0) y ajustarlo a una escala uniforme
+    # Normalizar coordenadas para que sean estrictamente positivas
     all_vertices = np.array(all_vertices)
     min_x, min_y = np.min(all_vertices[:, 0]), np.min(all_vertices[:, 1])
     max_x, max_y = np.max(all_vertices[:, 0]), np.max(all_vertices[:, 1])
     
-    center_x = (min_x + max_x) / 2.0
-    center_y = (min_y + max_y) / 2.0
-    
-    # Queremos que la altura máxima del SVG normalizado sea de 100 unidades (mm de referencia en CAD)
     scale_y = max_y - min_y
     scale_x = max_x - min_x
     max_dim = max(scale_x, scale_y)
     scale_factor = 100.0 / max_dim
     
-    print(f"[+] Ajuste de escala: Original {scale_x:.1f}x{scale_y:.1f}px -> Normalizado a 100.0 unidades.")
+    # Dimensiones de la caja delimitadora normalizada
+    view_w = scale_x * scale_factor
+    view_h = scale_y * scale_factor
+    
+    print(f"[+] Ajuste de escala: Original {scale_x:.1f}x{scale_y:.1f}px -> Normalizado a {view_w:.1f}x{view_h:.1f} unidades.")
     
     # Escribir el SVG
-    # El viewBox irá de -60 a 60 en X y Y para dejar margen de centrado
-    view_w = 120
-    view_h = 120
-    
+    # El viewBox e importación ahora usan coordenadas estrictamente positivas para compatibilidad con OpenSCAD
     svg_header = (
         f'<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n'
-        f'<svg width="100mm" height="100mm" viewBox="-60 -60 {view_w} {view_h}"\n'
+        f'<svg width="{view_w:.1f}mm" height="{view_h:.1f}mm" viewBox="0 0 {view_w:.3f} {view_h:.3f}"\n'
         f'     xmlns="http://www.w3.org/2000/svg" version="1.1">\n'
         f'  <g fill="black" fill-rule="evenodd" stroke="none">\n'
     )
     
     svg_footer = "  </g>\n</svg>\n"
     
-    path_elements = []
+    all_d_cmds = []
     for vertices in svg_paths:
-        # Centrar y escalar los vértices
-        norm_v = (vertices - [center_x, center_y]) * scale_factor
+        # Trasladar y escalar los vértices a coordenadas positivas e invertir Y para orientarlo correctamente
+        norm_v = np.zeros_like(vertices)
+        norm_v[:, 0] = (vertices[:, 0] - min_x) * scale_factor
+        norm_v[:, 1] = (vertices[:, 1] - min_y) * scale_factor
         
-        # Construir comandos SVG d="M x0 y0 L x1 y1 ... Z"
-        # Nota: Matplotlib Y invertido ya compensa el sentido de OpenSCAD.
-        d_cmds = []
-        d_cmds.append(f"M {norm_v[0][0]:.3f} {norm_v[0][1]:.3f}")
+        # Construir sub-camino
+        sub_d = []
+        sub_d.append(f"M {norm_v[0][0]:.3f} {norm_v[0][1]:.3f}")
         for pt in norm_v[1:]:
-            d_cmds.append(f"L {pt[0]:.3f} {pt[1]:.3f}")
-        d_cmds.append("Z")
+            sub_d.append(f"L {pt[0]:.3f} {pt[1]:.3f}")
+        sub_d.append("Z")
+        all_d_cmds.append(" ".join(sub_d))
         
-        path_str = f'    <path d="{" ".join(d_cmds)}" />'
-        path_elements.append(path_str)
+    # Concatenar todos los sub-caminos en un único tag <path>
+    # Esto es crucial para que OpenSCAD cale correctamente los huecos interiores de las circunvoluciones
+    single_path = f'    <path d="{" ".join(all_d_cmds)}" />'
         
     with open(svg_out_path, "w", encoding="utf-8") as f:
         f.write(svg_header)
-        f.write("\n".join(path_elements))
+        f.write(single_path)
         f.write("\n")
         f.write(svg_footer)
         
