@@ -7,8 +7,8 @@
 
 // 1. Tipo de Base y Geometría General
 tipo_base = "circ";          // [rect: Rectangular, oval: Elíptica, circ: Circular]
-ancho_llavero = 50.0;       // Ancho total del llavero (en mm) - Aumentado para legibilidad
-largo_llavero = 50.0;       // Largo total del llavero (en mm) - Aumentado para legibilidad
+ancho_llavero = 55.0;       // Ancho total del llavero (en mm) - Aumentado para dar espacio al agujero interno
+largo_llavero = 55.0;       // Largo total del llavero (en mm) - Aumentado para dar espacio al agujero interno
 esquinas_r = 6.0;           // Radio de las esquinas (solo para tipo_base = "rect")
 
 // 2. Alturas y Espesores (en mm)
@@ -18,9 +18,9 @@ espesor_borde = 1.0;        // Altura del relieve del borde protector (frontal)
 espesor_texto = 1.0;        // Altura del relieve de los textos (frontal)
 borde_ancho = 1.6;          // Ancho de la pared del borde protector
 
-// 3. Orificio de la Argolla
+// 3. Orificio de la Argolla (Ahora INTERNO en todos los llaveros)
 anillo_d_int = 4.2;         // Diámetro del agujero para la argolla
-anillo_d_ext = 8.5;         // Diámetro exterior de la oreja
+anillo_d_ext = 8.5;         // Diámetro exterior del rim protector
 anillo_pos = "top_left";    // [top_left, top_right, top_center, left_center]
 
 // 4. Configuración del Logo y Texto
@@ -28,7 +28,7 @@ anillo_pos = "top_left";    // [top_left, top_right, top_center, left_center]
 // "frontal_replace" -> Frente: "icif" arriba, Logo engranaje centrado (Simétrico Split)
 // "frontal_add"     -> Frente: Logo engranaje centrado, "icif" abajo adicional en relieve
 tipo_texto_icif = "frontal_add"; 
-logo_escala = 0.38;         // Escala del logo de engranaje (ajustado para centrado exacto)
+logo_escala = 0.35;         // Escala del logo de engranaje "bit a bit 3.0" (ajustado para centrado y no colisión con agujero)
 texto_icif = "icif";        // Sigla de la carrera
 size_icif = 5.5;            // Tamaño de fuente para "icif"
 
@@ -61,53 +61,46 @@ module borde_borde_2d() {
     }
 }
 
-// Oreja para la argolla del llavero (en 2D) con corrección geométrica para óvalos/círculos
-module oreja_2d() {
-    w_ref = (tipo_base == "circ") ? max(ancho_llavero, largo_llavero) : ancho_llavero;
-    l_ref = (tipo_base == "circ") ? max(ancho_llavero, largo_llavero) : largo_llavero;
-    
-    // Ángulo de posicionamiento de la oreja en coordenadas polares
-    ang = (anillo_pos == "top_left") ? 135 :
-          (anillo_pos == "top_right") ? 45 :
-          (anillo_pos == "left_center") ? 180 : 90;
-          
-    // Orientación para que apunte hacia afuera radialmente
-    rot_ang = (anillo_pos == "top_left") ? 135 :
+// Función paramétrica para calcular la posición exacta del orificio del llavero.
+// Ubica el orificio en el interior, de forma que su rim exterior quede exactamente tangente
+// a la parte interna del borde protector de la base.
+function get_hole_pos() = 
+    let(
+        w_ref = (tipo_base == "circ") ? max(ancho_llavero, largo_llavero) : ancho_llavero,
+        l_ref = (tipo_base == "circ") ? max(ancho_llavero, largo_llavero) : largo_llavero,
+        ang = (anillo_pos == "top_left") ? 135 :
               (anillo_pos == "top_right") ? 45 :
-              (anillo_pos == "left_center") ? 180 : 90;
+              (anillo_pos == "left_center") ? 180 : 90
+    )
+    (tipo_base == "rect") ? [
+        ((anillo_pos == "top_left" || anillo_pos == "left_center") ? -w_ref/2 + borde_ancho + anillo_d_ext/2 : 
+         (anillo_pos == "top_right") ? w_ref/2 - borde_ancho - anillo_d_ext/2 : 0),
+        ((anillo_pos == "top_left" || anillo_pos == "top_right" || anillo_pos == "top_center") ? l_ref/2 - borde_ancho - anillo_d_ext/2 : 0)
+    ] : [
+        // Para óvalos y círculos, calculamos el punto en el perímetro elíptico en el ángulo seleccionado
+        let(
+            a = w_ref / 2,
+            b = l_ref / 2,
+            R_theta = 1 / sqrt( pow(cos(ang)/a, 2) + pow(sin(ang)/b, 2) ),
+            d = R_theta - borde_ancho - anillo_d_ext / 2
+        )
+        d * cos(ang),
+        let(
+            a = w_ref / 2,
+            b = l_ref / 2,
+            R_theta = 1 / sqrt( pow(cos(ang)/a, 2) + pow(sin(ang)/b, 2) ),
+            d = R_theta - borde_ancho - anillo_d_ext / 2
+        )
+        d * sin(ang)
+    ];
 
-    if (tipo_base == "rect") {
-        // Posición tradicional en la esquina del rectángulo
-        offset_x = (anillo_pos == "top_left") ? -w_ref/2 + 2 : 
-                   (anillo_pos == "top_right") ? w_ref/2 - 2 : 
-                   (anillo_pos == "left_center") ? -w_ref/2 + 2 : 0;
-                   
-        offset_y = (anillo_pos == "top_left" || anillo_pos == "top_right" || anillo_pos == "top_center") ? l_ref/2 - 2 : 0;
-        
-        translate([offset_x, offset_y, 0])
-        rotate([0, 0, rot_ang])
-        translate([0, anillo_d_ext/2 - 1.2, 0]) // Solape controlado
-        difference() {
-            circle(d=anillo_d_ext);
-            circle(d=anillo_d_int);
-        }
-    } else {
-        // CÁLCULO ELÍPTICO CORRECTO: Evita que la oreja quede flotando en el aire.
-        // Mapea el punto exacto en el perímetro de la elipse usando cos/sin paramétricos.
-        a = w_ref / 2;
-        b = l_ref / 2;
-        
-        // Coordenadas cartesianas sobre la elipse restando un pequeño margen de solapamiento
-        offset_x = (a - 1.5) * cos(ang);
-        offset_y = (b - 1.5) * sin(ang);
-        
-        translate([offset_x, offset_y, 0])
-        rotate([0, 0, rot_ang])
-        translate([0, anillo_d_ext/2 - 1.0, 0]) // Fusión sólida con el borde curvo
-        difference() {
-            circle(d=anillo_d_ext);
-            circle(d=anillo_d_int);
-        }
+// Rim o reborde protector elevado del orificio del llavero (en 2D)
+module rim_agujero_2d() {
+    pos = get_hole_pos();
+    translate(pos)
+    difference() {
+        circle(d=anillo_d_ext);
+        circle(d=anillo_d_int);
     }
 }
 
@@ -119,21 +112,20 @@ module logo_engranaje_2d() {
 // --- ENSAMBLE GENERAL ---
 
 module llavero_final() {
+    pos_hole = get_hole_pos();
     difference() {
         // Modelo base (Cuerpo + Borde + Elementos frontales)
         union() {
-            // 1. Placa Base e Implante de Oreja
+            // 1. Placa Base (Sólida, sin oreja exterior)
             linear_extrude(height=espesor_base) {
-                union() {
-                    base_2d();
-                    oreja_2d();
-                }
+                base_2d();
             }
             
-            // 2. Borde Protector Frontal
+            // 2. Borde Protector Frontal y Rim del Agujero Interno
             translate([0, 0, espesor_base])
             linear_extrude(height=espesor_borde) {
                 borde_borde_2d();
+                rim_agujero_2d();
             }
             
             // 3. Elementos Frontales en Relieve
@@ -176,7 +168,11 @@ module llavero_final() {
             }
         }
         
-        // Grabado en el reverso: "icif" en bajorrelieve (Solo para opción reverso)
+        // 4. Subtraer Orificio del Llavero (a través de la base y del rim)
+        translate([pos_hole[0], pos_hole[1], -1])
+        cylinder(d=anillo_d_int, h=espesor_base + espesor_borde + 2);
+        
+        // 5. Grabado en el reverso: "icif" en bajorrelieve (Solo para opción reverso)
         if (tipo_texto_icif == "reverso") {
             translate([0, 0, -0.1])
             linear_extrude(height=0.9) {

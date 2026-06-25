@@ -20,26 +20,41 @@ def vectorize_png(png_path, svg_out_path, threshold=200, min_points=5):
     img = Image.open(png_path).convert('L')
     width, height = img.size
     
-    # Recorte central automático para imágenes tipo banner horizontal (excluir montañas laterales)
-    if width / height > 1.5:
-        print(f"[*] Detectado aspect ratio ancho ({width/height:.2f}). Aplicando recorte central cuadrado...")
-        left = (width - height) // 2
-        right = left + height
-        img = img.crop((left, 0, right, height))
-        width, height = img.size
-        
     img_np = np.array(img)
     
-    # Aplicar máscara circular sobre el cuadrado recortado para aislar el logo del engranaje y eliminar picos de montaña
-    cy, cx = height / 2.0, width / 2.0
-    y_indices, x_indices = np.ogrid[:height, :width]
-    dist_from_center = np.sqrt((x_indices - cx)**2 + (y_indices - cy)**2)
-    # El radio de la máscara es el 42% de la altura de la imagen (84% de diámetro)
-    mask = dist_from_center <= (0.42 * height)
-    img_np[~mask] = 0 # Forzar a fondo negro los píxeles fuera de la máscara
-    
-    # Binarizar: el logo es blanco puro (>200)
-    binary = img_np > threshold
+    if width / height > 1.5:
+        # Binarizar: el logo es blanco puro
+        binary_full = img_np > threshold
+        
+        # Usar análisis de componentes conectados para extraer el logo central
+        # y filtrar de forma inteligente montañas a los lados y abajo.
+        from scipy.ndimage import label
+        labeled, num_features = label(binary_full)
+        
+        binary = np.zeros_like(binary_full)
+        
+        keep_count = 0
+        for i in range(1, num_features + 1):
+            y_indices, x_indices = np.where(labeled == i)
+            if len(x_indices) == 0:
+                continue
+            min_x, max_x = np.min(x_indices), np.max(x_indices)
+            min_y, max_y = np.min(y_indices), np.max(y_indices)
+            cx = np.mean(x_indices)
+            cy = np.mean(y_indices)
+            
+            # Filtro de componentes para el logo "bit a bit 3.0" en un banner de 1024x341:
+            # 1. El centro X debe estar en la franja central (X entre 340 y 684)
+            # 2. No debe tocar el fondo inferior (Y máximo debe ser < 282, donde empiezan las montañas)
+            # 3. No debe ser parte de los bordes laterales decorativos del banner (min_x > 320 y max_x < 700)
+            if 340 <= cx <= 684 and max_y < 282 and min_x > 320 and max_x < 700:
+                binary[labeled == i] = True
+                keep_count += 1
+                
+        print(f"[*] Segmentación por componentes: conservados {keep_count} componentes del logo.")
+    else:
+        # Para imágenes no anchas, conservar compatibilidad original (binarizado simple)
+        binary = img_np > threshold
     
     print("[*] Detectando contornos con matplotlib...")
     # Obtener isolíneas para el umbral 0.5 en la matriz binaria

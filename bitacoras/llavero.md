@@ -17,8 +17,8 @@ Valores de diseño extraídos automáticamente del archivo de origen:
 | Parámetro | Valor por Defecto | Descripción / Función |
 | :--- | :--- | :--- |
 | `tipo_base` | `"rect"` | [rect: Rectangular, oval: Elíptica, circ: Circular] |
-| `ancho_llavero` | `50.0` | Ancho total del llavero (en mm) - Aumentado para legibilidad |
-| `largo_llavero` | `50.0` | Largo total del llavero (en mm) - Aumentado para legibilidad |
+| `ancho_llavero` | `55.0` | Ancho total del llavero (en mm) - Aumentado para dar espacio al agujero interno |
+| `largo_llavero` | `55.0` | Largo total del llavero (en mm) - Aumentado para dar espacio al agujero interno |
 | `esquinas_r` | `6.0` | Radio de las esquinas (solo para tipo_base = "rect") |
 | `espesor_base` | `2.2` | Grosor de la placa base |
 | `espesor_logo` | `1.0` | Altura del relieve del logo (frontal) |
@@ -26,10 +26,10 @@ Valores de diseño extraídos automáticamente del archivo de origen:
 | `espesor_texto` | `1.0` | Altura del relieve de los textos (frontal) |
 | `borde_ancho` | `1.6` | Ancho de la pared del borde protector |
 | `anillo_d_int` | `4.2` | Diámetro del agujero para la argolla |
-| `anillo_d_ext` | `8.5` | Diámetro exterior de la oreja |
+| `anillo_d_ext` | `8.5` | Diámetro exterior del rim protector |
 | `anillo_pos` | `"top_left"` | [top_left, top_right, top_center, left_center] |
 | `tipo_texto_icif` | `"reverso"` | Parámetro de diseño. |
-| `logo_escala` | `0.38` | Escala del logo de engranaje (ajustado para centrado exacto) |
+| `logo_escala` | `0.35` | Escala del logo de engranaje "bit a bit 3.0" (ajustado para centrado y no colisión con agujero) |
 | `texto_icif` | `"icif"` | Sigla de la carrera |
 | `size_icif` | `5.5` | Tamaño de fuente para "icif" |
 
