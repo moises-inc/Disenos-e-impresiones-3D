@@ -1,6 +1,6 @@
 ---
 tipo: bitacora_pieza
-proyecto: USS Spiderbot
+proyecto: bit a bit
 pieza: llavero
 scad_source: cad/llavero.scad
 stl_output: cad/stl/llavero.stl
@@ -17,22 +17,21 @@ Valores de diseño extraídos automáticamente del archivo de origen:
 | Parámetro | Valor por Defecto | Descripción / Función |
 | :--- | :--- | :--- |
 | `tipo_base` | `"rect"` | [rect: Rectangular, oval: Elíptica, circ: Circular] |
-| `ancho_llavero` | `45.0` | Ancho total del llavero (en mm) |
-| `largo_llavero` | `45.0` | Largo total del llavero (en mm) |
-| `esquinas_r` | `5.0` | Radio de las esquinas (solo para tipo_base = "rect") |
-| `espesor_base` | `2.0` | Grosor de la placa base |
+| `ancho_llavero` | `50.0` | Ancho total del llavero (en mm) - Aumentado para legibilidad |
+| `largo_llavero` | `50.0` | Largo total del llavero (en mm) - Aumentado para legibilidad |
+| `esquinas_r` | `6.0` | Radio de las esquinas (solo para tipo_base = "rect") |
+| `espesor_base` | `2.2` | Grosor de la placa base |
 | `espesor_logo` | `1.0` | Altura del relieve del logo (frontal) |
 | `espesor_borde` | `1.0` | Altura del relieve del borde protector (frontal) |
-| `espesor_texto` | `1.0` | Altura del relieve del texto "icif" (frontal o reverso) |
-| `borde_ancho` | `1.5` | Ancho de la pared del borde protector |
-| `anillo_d_int` | `4.0` | Diámetro del agujero para la argolla |
-| `anillo_d_ext` | `8.0` | Diámetro exterior de la oreja |
+| `espesor_texto` | `1.0` | Altura del relieve de los textos (frontal) |
+| `borde_ancho` | `1.6` | Ancho de la pared del borde protector |
+| `anillo_d_int` | `4.2` | Diámetro del agujero para la argolla |
+| `anillo_d_ext` | `8.5` | Diámetro exterior de la oreja |
 | `anillo_pos` | `"top_left"` | [top_left, top_right, top_center, left_center] |
 | `tipo_texto_icif` | `"reverso"` | Parámetro de diseño. |
-| `logo_escala` | `0.32` | Escala del logo (ajustar según el tamaño del llavero) |
-| `logo_offset_y` | `2.0` | Desplazamiento en Y para centrar visualmente el logo |
-| `texto_icif` | `"icif"` | Texto de la carrera/centro |
-| `texto_size` | `6.0` | Tamaño de la fuente para el texto |
+| `logo_escala` | `0.38` | Escala del logo de engranaje (ajustado para centrado exacto) |
+| `texto_icif` | `"icif"` | Sigla de la carrera |
+| `size_icif` | `5.5` | Tamaño de fuente para "icif" |
 
 ## 2. Planificación de Fabricación y Slicing
 Selecciona la impresora utilizada y completa los parámetros específicos para el rebanado (CrealityPrint):
@@ -76,4 +75,4 @@ Valores críticos de tolerancia de impresión a validar después de fabricar (co
 - **Observaciones Generales:** (Anotar si hubo warping, problemas de adherencia, hilachas o defectos estéticos)
 
 ---
-**Historial del Grafo:** [USS Spiderbot Docs](file:///mnt/9b846436-0407-4e80-b8af-5417ffbdee8e/Github/USS%20SPIDERBOT%20(solemne%203)/docs/)
+**Historial del Grafo:** [bit a bit Bitácoras](file:///mnt/9b846436-0407-4e80-b8af-5417ffbdee8e/Impresi%C3%B3n%203D/bitacoras/)

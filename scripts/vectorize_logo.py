@@ -19,12 +19,26 @@ def vectorize_png(png_path, svg_out_path, threshold=200, min_points=5):
     print(f"[*] Cargando imagen: {png_path}")
     img = Image.open(png_path).convert('L')
     width, height = img.size
+    
+    # Recorte central automático para imágenes tipo banner horizontal (excluir montañas laterales)
+    if width / height > 1.5:
+        print(f"[*] Detectado aspect ratio ancho ({width/height:.2f}). Aplicando recorte central cuadrado...")
+        left = (width - height) // 2
+        right = left + height
+        img = img.crop((left, 0, right, height))
+        width, height = img.size
+        
     img_np = np.array(img)
     
-    # Binarizar: el logo es blanco puro (>200) y el fondo es azul oscuro (~50)
-    # Invertir verticalmente la imagen para que el origen (0,0) de OpenSCAD quede abajo-izquierda como en cartesianas
-    # o mantener la orientación normal. En OpenSCAD, Y aumenta hacia arriba, y en imágenes Y aumenta hacia abajo.
-    # Así que invertiremos el eje Y para que no salga de cabeza en OpenSCAD.
+    # Aplicar máscara circular sobre el cuadrado recortado para aislar el logo del engranaje y eliminar picos de montaña
+    cy, cx = height / 2.0, width / 2.0
+    y_indices, x_indices = np.ogrid[:height, :width]
+    dist_from_center = np.sqrt((x_indices - cx)**2 + (y_indices - cy)**2)
+    # El radio de la máscara es el 42% de la altura de la imagen (84% de diámetro)
+    mask = dist_from_center <= (0.42 * height)
+    img_np[~mask] = 0 # Forzar a fondo negro los píxeles fuera de la máscara
+    
+    # Binarizar: el logo es blanco puro (>200)
     binary = img_np > threshold
     
     print("[*] Detectando contornos con matplotlib...")
