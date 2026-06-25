@@ -48,6 +48,9 @@ def vectorize_png(png_path, svg_out_path, threshold=200, min_points=5):
             # 2. No debe tocar el fondo inferior (Y máximo debe ser < 282, donde empiezan las montañas)
             # 3. No debe ser parte de los bordes laterales decorativos del banner (min_x > 320 y max_x < 700)
             if 340 <= cx <= 684 and max_y < 282 and min_x > 320 and max_x < 700:
+                # 4. Excluir fragmentos residuales de picos de montaña que se filtran en la zona inferior-derecha
+                if cx > 610 and cy > 240:
+                    continue
                 binary[labeled == i] = True
                 keep_count += 1
                 
