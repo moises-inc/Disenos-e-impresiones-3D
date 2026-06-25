@@ -6,7 +6,7 @@
 // --- PARÁMETROS CONFIGURABLES ---
 
 // 1. Tipo de Base y Geometría General
-tipo_base = "rect";          // [rect: Rectangular, oval: Elíptica, circ: Circular]
+tipo_base = "circ";          // [rect: Rectangular, oval: Elíptica, circ: Circular]
 ancho_llavero = 45.0;       // Ancho total del llavero (en mm)
 largo_llavero = 45.0;       // Largo total del llavero (en mm)
 esquinas_r = 6.0;           // Radio de las esquinas (solo para tipo_base = "rect")

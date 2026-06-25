@@ -27,7 +27,7 @@ anillo_pos = "top_left";    // [top_left, top_right, top_center, left_center]
 // "reverso"         -> Frente: Cerebro centrado + "bit a bit". Reverso: "icif" grabado
 // "frontal_replace" -> Frente: "icif" arriba, Cerebro al centro, "bit a bit" abajo (Simétrico Split)
 // "frontal_add"     -> Frente: Cerebro centrado, "bit a bit" abajo, "icif" en segunda línea abajo
-tipo_texto_icif = "reverso"; 
+tipo_texto_icif = "frontal_add"; 
 logo_escala = 0.35;         // Escala del cerebro (ajustado para centrado exacto)
 texto_bit = "bit a bit";    // Nombre del centro en minúsculas
 texto_icif = "icif";        // Sigla de la carrera

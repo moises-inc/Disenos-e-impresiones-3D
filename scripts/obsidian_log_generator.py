@@ -59,7 +59,7 @@ def generate_markdown_log(scad_path, output_dir, variables):
     lines = [
         "---",
         "tipo: bitacora_pieza",
-        "proyecto: USS Spiderbot",
+        "proyecto: bit a bit",
         f"pieza: {base_name}",
         f"scad_source: {scad_rel}",
         f"stl_output: {stl_rel}",
@@ -127,7 +127,7 @@ def generate_markdown_log(scad_path, output_dir, variables):
         "- **Observaciones Generales:** (Anotar si hubo warping, problemas de adherencia, hilachas o defectos estéticos)",
         "",
         "---",
-        "**Historial del Grafo:** [USS Spiderbot Docs](file:///mnt/9b846436-0407-4e80-b8af-5417ffbdee8e/Github/USS%20SPIDERBOT%20(solemne%203)/docs/)"
+        "**Historial del Grafo:** [bit a bit Bitácoras](file:///mnt/9b846436-0407-4e80-b8af-5417ffbdee8e/Impresi%C3%B3n%203D/bitacoras/)"
     ])
     
     with open(output_path, 'w', encoding='utf-8') as f:

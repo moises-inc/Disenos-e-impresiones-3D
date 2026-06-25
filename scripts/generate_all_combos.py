@@ -24,14 +24,13 @@ def main():
     bases = ["rect", "oval", "circ"]
     textos = ["reverso", "frontal_replace", "frontal_add"]
 
-    scad_file = "cad/llavero.scad"
     stl_dir = "cad/stl"
     render_dir = "cad/renders"
 
     os.makedirs(stl_dir, exist_ok=True)
     os.makedirs(render_dir, exist_ok=True)
 
-    print("[*] Iniciando generación de todas las combinaciones posibles (9 en total)...")
+    print("[*] Iniciando generación de STLs y Renders a partir de archivos individuales (9 en total)...")
     start_total = time.time()
     
     # Parámetros de cámara para OpenSCAD CLI: translate_x,y,z,rot_x,y,z,distancia
@@ -44,20 +43,21 @@ def main():
     for base in bases:
         for texto in textos:
             count += 1
-            print(f"\n[{count}/9] Procesando: Base={base} | Texto={texto}")
+            print(f"\n[{count}/9] Procesando archivo individual: llavero_{base}_{texto}.scad")
             
-            # Nombres de archivo
+            scad_file = f"cad/llavero_{base}_{texto}.scad"
+            if not os.path.exists(scad_file):
+                print(f"    [-] Error: El archivo individual no existe: {scad_file}")
+                continue
+                
+            # Nombres de archivo de salida
             file_base = f"llavero_{base}_{texto}"
             stl_path = os.path.join(stl_dir, f"{file_base}.stl")
             render_front_path = os.path.join(render_dir, f"{file_base}_front.png")
             render_back_path = os.path.join(render_dir, f"{file_base}_back.png")
             
-            # Parámetros a inyectar en OpenSCAD
-            defines = [
-                f'tipo_base="{base}"',
-                f'tipo_texto_icif="{texto}"',
-                '$fn=72' # Alta resolución para el resultado final
-            ]
+            # Forzar resolución alta ($fn=72)
+            defines = ["$fn=72"]
             
             # --- 1. Generar STL ---
             print(f"    -> Exportando STL...")
